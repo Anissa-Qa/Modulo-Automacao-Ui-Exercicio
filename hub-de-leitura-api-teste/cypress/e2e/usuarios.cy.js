@@ -3,7 +3,7 @@ let token
 
 beforeEach(() => {
     cy.geratoken("admin@biblioteca.com", "admin123").then(tkn => {
-        token = tkn
+        token = tkn // Agora tkn realmente tem o token!
     });
 })
 
@@ -65,8 +65,8 @@ describe('GET - Teste de Api, Gestão de Usuários', () => {
 });
 
 describe('POST - Teste de Api, Gestão de Usuários', () => {
-    it.only('Deve cadastrar um usuário com sucesso', () => {
-       let email = `maria10000${Date.now()}@email.com`
+    it('Deve cadastrar um usuário com sucesso', () => {
+        let email = `maria10000${Date.now()}@email.com`
         cy.api({
             method: 'POST',
             url: 'users',
@@ -100,3 +100,55 @@ describe('POST - Teste de Api, Gestão de Usuários', () => {
 
     });
 });
+
+describe('PUT - Teste de Api, Gestão de Usuários', () => {
+
+ let token; // token acessível em todos os testes
+
+    beforeEach(() => {
+        cy.geratoken("admin@biblioteca.com", "admin123").then(tkn => {
+            token = tkn; // armazena o token gerado
+        });
+    });
+
+    it('Deve atualizar um usuário com sucesso', () => {
+        cy.api({
+            method: 'PUT',
+            url: 'users/23',
+            headers: { Authorization: token },
+            body: {
+                "name": "Maria Santos",
+                "email": "maria10000updated@email.com",
+                "password": "senha123"
+            }
+        }).should((response) => {
+            expect(response.status).to.equal(200)
+            expect(response.body.message).to.equal('Usuário atualizado com sucesso.')
+        })
+    });
+
+    it.only('Deve atualizar um usuário com sucesso - de forma dinamica', () => {
+        const email = `maria${Date.now()}@email.com`;
+        cy.cadastrarUsuario("Maria Santos", email, "senha123")
+            .then(userId => {
+                expect(userId).to.not.be.undefined;
+
+                cy.api({
+                    method: 'PUT',
+                    url: `users/${userId}`,
+                    headers: { Authorization: token },
+                    body: {
+                        name: "Maria Santos Atualizada",
+                        email: email,
+                        password: "novasenha123"
+                    }
+                }).then(response => {
+                    expect(response.status).to.equal(200)
+                });
+            });
+
+
+
+    });
+});
+

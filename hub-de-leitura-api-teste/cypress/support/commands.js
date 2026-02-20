@@ -24,17 +24,32 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-Cypress.Commands.add('geratoken', (email, senha) => { 
-    cy.request({
+const { expect } = require("chai")
+
+
+Cypress.Commands.add('geratoken', (email, senha) => {
+    return cy.request({
         method: 'POST',
         url: 'http://localhost:3000/api/login',
-
-        body: {
-  email: email,
-  password: senha
-}
+        body: { email, password: senha }
     }).then((response) => {
         expect(response.status).to.equal(200)
-        return response.body.token
+        Cypress.env('token', response.body.token)
+        return response.body.token // 
     })
- })
+})
+
+
+
+
+Cypress.Commands.add('cadastrarUsuario', (nome, email, senha) => {
+    cy.api({  
+        method: 'POST',
+        url: 'users',
+        headers: { Authorization: token },
+        body: { nome: nome, email: email, senha: senha }
+    }).then((response) => {
+        expect(response.status).to.equal(201)
+        return response.body.id  // agora o .then() no teste recebe o ID corretamente
+    })
+})
